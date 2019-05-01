@@ -1,0 +1,62 @@
+command line interface
+
+start the script. 
+
+Welcome to Log Ninja, let's slice some logs!
+(ascii ninja)
+
+Type the name of parent folder containing the logs or drag the folder here
+
+Type the date and time in UTC yyyy-mm-dd-hh-mm
+
+
+
+recursively goes through root folder and creates a file with 
+
+************ M3 Messages **************
+log
+log
+log
+
+************* Acu Debug *****************
+log
+log
+log
+log
+
+
+so different log types
+
+ACUdebug files
+aircraftd.log
+messages (modem)
+
+aircraftd.log
+mcp-bistMGr.sh.log
+msc.log
+pfe.log
+platformMgr.log
+wmgr.log
+messages
+
+so tomorrow, start with messages for modem.
+
+find the right file based off date
+unzip or open that file and do a grep 
+calculate the start time based off time minus
+calculate the end time based off time plus
+if the first line of the file is after the start time, start there
+if the last line of the file is before the end time, end there
+
+it might not be the exact minute so if you want 13:40 and you have 13:39 and then 13:41, start at 13:41
+
+if you hit that line, start to write into a temp file every line and loop until you see 
+the end time, then close that file and write the tmp file concatenated onto the main log
+file you are writing with the asterisks and the name of the file. that main log file will be date time stamp_sliced.log
+
+maybe there's an option for do you want m3, s4, or both? saves time and if we don't care about the s4 for connectivity then we don't deal with it. 
+
+after getting message
+
+
+stretch goal handle date time that straddles two days zulu - shouldn't be too hard
