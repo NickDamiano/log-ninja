@@ -154,11 +154,9 @@ class LogNinja:
 			minutes_in = int(floor(minutes_in))
 		else:
 			seconds = 0
-
+		minutes_in = int(minutes_in)
 		minutes = minutes_in % 60
 		hours = minutes_in / 60
-		print(hours)
-		print("hours above")
 		converted_time =  timelib(hours, minutes, seconds)
 		converted_time = converted_time.strftime("%H:%M:%S")
 		return converted_time
@@ -242,63 +240,106 @@ class LogNinja:
 			file_type = False
 		return file_type
 
-	def parse_file(self, file_path, file_type, date, times, sliced_minutes):
-		print("I am in the parse_file method")
-		# For each time in times
-		# calculate time start based off times[i] - sliced_minutes plus convert it to "00:04:00" format (but if the start time is a negative, meaning we subtracted 5 from 0001, then we start it at 0000)
-		# calculate time stop based off times[i] + sliced_minutes plus convert it to "00:04:00" format (if the start time is over 2359, then cap it at 2359)
-		# create a start flag and set to false
-		# create a stop flag and set to false
+	# The time stamp is in the third position but there are a few lines throughout the log that is a message like 
+	#	"Please review provided documentation". The program will falsely read that as reading the end of the stop time. 
+	#	To prevent this, the below line looks for the colon in a time stamp and returns early if none is found meaning
+	#	it is not a valid time to evaluate against. There must be a better way and there's a small chance you could have
+	#	a word or message with no time stamp and a colon in the third item on the line but I haven't seen it. 
+	def parse_line(self, start_time, stop_time, line, actual_date):		
+		split_line = line.split()
+		# If the log file line has more than 3 elements then we grab the third element which is the time stamp. Sometimes
+		# it has something like "Content-length: 907" which is not a valid line with a time stamp in which case we return
+		# and don't copy that line
+		if(len(split_line) > 2):
+			time_stamp = split_line[2]
+		else:
+			return
 
-		# Open the file and read in each line
-			# split the line into a separate split_line variable
-			# if start_flag is flipped OR line[2] == start_time or if line[2] > start_time and start_flag not flipped
-					# flip the start flag
-					# grab that line and write it to the outfile
-			# if line[2] == stop_time or if line[2] > stop_time and stop_flag not flipped
-				# flip stop_flag to true and start flag to false
-				# Write a bunch of line breaks and formatting for next time
-				# Skip the for loop to get to the next time in the times array
-		# if(extension == ".gz")
-		# 	with gzip.open(file_path) as f:
-		# 		line = f.read()
-		# # If we matched a file but it doesn't have .gz, then it must be an already unzipped file
-		# else:
-		# 	opened_input_file = open(file_path, "r")
-		# 	line = opened_input_file.readlines()
-		# 	# if startime is in line or greater, then open file
-		# 	# if stoptime or greater is in line, close the output file and change starttime
+		if(":" not in time_stamp):
+			return 
+		if(time_stamp > stop_time):
+			print("We are past the end time")
+			return "end"
+		elif(time_stamp >= start_time):
+			print("capture line")
+			outfile = open("sliced_logs_" + actual_date, "a")
+			outfile.write(line)
+			outfile.close()
 
-	# # Takes a line 
-	# def line_parser(line):
-	# 	print
+	# Parse file takes all string variables of path to file, file type (gzip or text), actual date meaning the date the user put in
+	#	date meaning the date of the log file since it lists the following day , and a time range to slice. 
+	#	The method checks the file type and does the appropriate file opening based on that. It calls parse_line to check each
+	#	line against start and stop times, and once the stop time is reached, it returns a success message
+	def parse_file(self, file_path, file_type, actual_date, date, time):
+		split_times = time.split(" ")
+		start_time = split_times[0]
+		end_time = split_times[1]
+		line_status = ""
 
+		self.create_section_header(time, actual_date, file_path)
+
+		if(file_type == "gzip"):
+			with gzip.open(file_path) as log_file:
+				for line in log_file:
+					line_status = self.parse_line(start_time, end_time, line, actual_date)
+					if(line_status == "end"):
+						log_file.close()
+						return "File Parsed"
+
+		# If we matched a file but it doesn't have .gz, then it must be an already unzipped file
+		elif(file_type == "text"):
+			log_file = open(file_path, "r")
+			for line in log_file:
+				line_status = self.parse_line(start_time, end_time, line, actual_date)
+				if(line_status == "end"):
+					log_file.close()
+					return "File Parsed"
+
+	def create_file_header(self, actual_date, file_path):
+		outfile = open("sliced_logs_" + actual_date, "w")
+		outfile.write(("*" * 100) + "\n")
+		outfile.write("Sliced logs for " + actual_date + " retrieved from " + file_path + "\n")
+		outfile.write(("*" * 100) + "\n")
+		outfile.write("\n\n\n\n")
+		outfile.close()
+
+	# Creates the section header for the timestamp section in the outfile
+	def create_section_header(self, time, actual_date, log_date):
+		outfile = open("sliced_logs_" + actual_date, "a")
+		outfile.write("\n\n\n\n\n")
+		outfile.write(("*" * 100) + "\n")
+		outfile.write("Sliced logs for " + actual_date + " " + time +  "\n")
+		outfile.write(("*" * 100) + "\n")
+		outfile.write("\n\n\n")
+
+# Create the LogNinja instance and run main
 Ninja = LogNinja()
 Ninja.print_ninja()
 
 # Probably start a loop here until the user types exit or something so it keeps getting dates
+# Get folder Path
 folder_path = Ninja.get_folder_path()
-print(folder_path)
-date = Ninja.get_date()
+# Get date
+actual_date = Ninja.get_date()
+# Get times to be sliced
 times = Ninja.get_times()
+# Get num of minutes to slice out
 sliced_minutes = Ninja.get_sliced_minutes()
-date = Ninja.modify_date(date)
-print(date)
-file_path = Ninja.find_log_by_date(date, folder_path)
-print(file_path)
+# Modify the date since the logs for the 25th will actually be listed under the 26th
+log_date = Ninja.modify_date(actual_date)
+# Locate the matching file and return file path
+file_path = Ninja.find_log_by_date(log_date, folder_path)
+# TODO add a thing where if the file_path is not located we loop through and ask for it all again 
 file_type = Ninja.check_extension(file_path)
-print(file_type)
+# Convert invidivual center times to start stop times in an array to be looped
 modified_times = Ninja.modify_times(times)
-print(modified_times)
-
-
-
-
-
-
-
-
-	#TODO handle just plain messages file
+# Create the outfile for the sliced logs where date is the date we are trying to locate
+Ninja.create_file_header(actual_date, file_path)
+# Call file parser method to find and output lines that match the timestamp
+for index, time in enumerate(modified_times):
+	result = Ninja.parse_file(file_path, file_type, actual_date, log_date, modified_times[index])
+	if(result == "File Parsed"):
+		print("Sliced " + modified_times[index] + " from file_path")
 
 	#TODO once the file is being extracted accurately, create a second class or method that is just for applying filters and rules
 	# so I can be like if you see, within 2 minutes span, 10 attenuator railed issues, then flag it for cable inspection and pending no issues, antenna replacement
@@ -306,24 +347,9 @@ print(modified_times)
 	# or if you see arinc missing o rsomething like that and this and that, diagnose as possible w
 
 
-
-
-	
-
-
-	# Close infile and outfile
-
-
-	# Maybe trace this ? It should only look through the file once and during that look, grab the appropriate sections for all times
-	# what you should probably do is create some methods and call them instead of so many inner loops.
-	# What we want to do is then ask the user if they have more dates yes/no. If they say yes, then we loop through the entire thing. If they say no
-	# 	then we exit with another ascii art thing. But at a mimimum we get this working for one iteration. 
-	#	Then a user can go look at SMS and write down 20190501 1353 
-
-	# what would be cool and totally worthless would be to have an animation of a sword slicing and then it loops ascii string file, clear screen, through an array of ascii string files
-	# then it has like 60 frames/elements in the array
-
-
+# Tests
+# test, for 0000 time, 2359 time, 2359 + 5 minutes, 0000 + 5 minutes, test the maximum and minimum acceptable values for each method
+#	
 
 
 
