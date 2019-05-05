@@ -258,10 +258,8 @@ class LogNinja:
 		if(":" not in time_stamp):
 			return 
 		if(time_stamp > stop_time):
-			print("We are past the end time")
 			return "end"
 		elif(time_stamp >= start_time):
-			print("capture line")
 			outfile = open("sliced_logs_" + actual_date, "a")
 			outfile.write(line)
 			outfile.close()
@@ -297,20 +295,25 @@ class LogNinja:
 
 	def create_file_header(self, actual_date, file_path):
 		outfile = open("sliced_logs_" + actual_date, "w")
-		outfile.write(("*" * 100) + "\n")
+		outfile.write("\n")
 		outfile.write("Sliced logs for " + actual_date + " retrieved from " + file_path + "\n")
-		outfile.write(("*" * 100) + "\n")
-		outfile.write("\n\n\n\n")
+		outfile.write(("*" * 80) + "\n")
 		outfile.close()
 
 	# Creates the section header for the timestamp section in the outfile
 	def create_section_header(self, time, actual_date, log_date):
 		outfile = open("sliced_logs_" + actual_date, "a")
-		outfile.write("\n\n\n\n\n")
-		outfile.write(("*" * 100) + "\n")
+		outfile.write("\n\n\n\n\n\n\n\n")
+		outfile.write("   __                    _ _        _                      \n")
+		outfile.write("  / /  ___   __ _    /\\ \\ (_)_ __  (_) __ _              \n")
+		outfile.write(" / /  / _ \\ / _  |  /  \\/ / | '_ \\ | |/ _` |            \n")
+		outfile.write("/ /__| (_) | (_| | / /\\  /| | | | || | (_| |              \n")
+		outfile.write("\\____/\\___/ \\__, | \\_\\ \\/ |_|_| |_|/ |\\__,_|        \n")
+		outfile.write("            |___/                |__/                      \n")
+		outfile.write("\n\n\n\n\n\n\n\n")
+		outfile.write(("*" * 80) + "\n")
 		outfile.write("Sliced logs for " + actual_date + " " + time +  "\n")
-		outfile.write(("*" * 100) + "\n")
-		outfile.write("\n\n\n")
+		outfile.write(("*" * 80) + "\n")
 
 # Create the LogNinja instance and run main
 Ninja = LogNinja()
@@ -339,7 +342,7 @@ Ninja.create_file_header(actual_date, file_path)
 for index, time in enumerate(modified_times):
 	result = Ninja.parse_file(file_path, file_type, actual_date, log_date, modified_times[index])
 	if(result == "File Parsed"):
-		print("Sliced " + modified_times[index] + " from file_path")
+		print("Sliced " + modified_times[index] + " from " + file_path)
 
 	#TODO once the file is being extracted accurately, create a second class or method that is just for applying filters and rules
 	# so I can be like if you see, within 2 minutes span, 10 attenuator railed issues, then flag it for cable inspection and pending no issues, antenna replacement
@@ -349,7 +352,7 @@ for index, time in enumerate(modified_times):
 
 # Tests
 # test, for 0000 time, 2359 time, 2359 + 5 minutes, 0000 + 5 minutes, test the maximum and minimum acceptable values for each method
-#	
+#	test for current date, test for unzipped regular file
 
 
 
