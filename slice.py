@@ -232,7 +232,7 @@ class LogNinja:
 			if(extension == ".gz"):
 				file_type = "gzip"
 			else:
-				extension = "text"
+				file_type = "text"
 		# if found logs is false, meaning we didn't match our date with any filenames, then we inform the user and the most outer loop
 		#	starts again
 		else:
@@ -276,6 +276,7 @@ class LogNinja:
 
 		self.create_section_header(time, actual_date, file_path)
 
+		# pdb.set_trace()
 		if(file_type == "gzip"):
 			with gzip.open(file_path) as log_file:
 				for line in log_file:
@@ -304,16 +305,19 @@ class LogNinja:
 	def create_section_header(self, time, actual_date, log_date):
 		outfile = open("sliced_logs_" + actual_date, "a")
 		outfile.write("\n\n\n\n\n\n\n\n")
-		outfile.write("   __                    _ _        _                      \n")
-		outfile.write("  / /  ___   __ _    /\\ \\ (_)_ __  (_) __ _              \n")
-		outfile.write(" / /  / _ \\ / _  |  /  \\/ / | '_ \\ | |/ _` |            \n")
-		outfile.write("/ /__| (_) | (_| | / /\\  /| | | | || | (_| |              \n")
-		outfile.write("\\____/\\___/ \\__, | \\_\\ \\/ |_|_| |_|/ |\\__,_|        \n")
-		outfile.write("            |___/                |__/                      \n")
+		outfile.write("        __                    _ _        _                      \n")
+		outfile.write("       / /  ___   __ _    /\\ \\ (_)_ __  (_) __ _              \n")
+		outfile.write("      / /  / _ \\ / _  |  /  \\/ / | '_ \\ | |/ _` |            \n")
+		outfile.write("     / /__| (_) | (_| | / /\\  /| | | | || | (_| |              \n")
+		outfile.write("     \\____/\\___/ \\__, | \\_\\ \\/ |_|_| |_|/ |\\__,_|        \n")
+		outfile.write("                 |___/                |__/                      \n")
 		outfile.write("\n\n\n\n\n\n\n\n")
 		outfile.write(("*" * 80) + "\n")
 		outfile.write("Sliced logs for " + actual_date + " " + time +  "\n")
 		outfile.write(("*" * 80) + "\n")
+
+
+
 
 # Create the LogNinja instance and run main
 Ninja = LogNinja()
