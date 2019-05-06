@@ -179,9 +179,8 @@ class LogNinja:
 			temp_stop = converted_time + sliced_minutes
 			if(temp_start < 0):
 				temp_start = 0
-			elif(temp_start > 2359):
-				temp_stop = 2359
-
+			elif(temp_stop > 1439):
+				temp_stop = 1439
 			temp_start_string = self.convert_minutes_to_time(temp_start)
 			temp_stop_string = self.convert_minutes_to_time(temp_stop)
 			start_stop = temp_start_string + " " + temp_stop_string
@@ -191,7 +190,7 @@ class LogNinja:
 
 	def modify_date(self, date):
 		date_object = datetime(int(date[0:4]), int(date[4:6]), int(date[6:8]))
-		now = datetime.now()
+		now = datetime.utcnow()
 		if(now.strftime("%Y%m%d") == date):
 			return date
 		else:
@@ -205,7 +204,7 @@ class LogNinja:
 		found_logs = False
 
 		# If the input date equals now in zulu time, then set file_path to end in /messages
-		now = datetime.now()
+		now = datetime.utcnow()
 		if(now.strftime("%Y%m%d") == date):
 			file_path = folder_path + "/" + "messages"
 			found_logs = True
@@ -236,7 +235,7 @@ class LogNinja:
 		# if found logs is false, meaning we didn't match our date with any filenames, then we inform the user and the most outer loop
 		#	starts again
 		else:
-			print("There were no matching log files with date " + date)
+			print("There were no matching log files with your date")
 			file_type = False
 		return file_type
 
@@ -275,7 +274,6 @@ class LogNinja:
 		line_status = ""
 
 		self.create_section_header(time, actual_date, file_path)
-
 		# pdb.set_trace()
 		if(file_type == "gzip"):
 			with gzip.open(file_path) as log_file:
