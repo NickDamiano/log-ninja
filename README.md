@@ -58,3 +58,27 @@ as the file location
             |___/                |__/
 Welcome to Log Ninja! Let's slice some logs.
 Drag the folder containing the modem messages logs:
+
+```
+
+After entering date, times, minutes to slice it will export to a file like this
+
+```
+
+Sliced logs for 20221102 retrieved from /Users/ndamiano/Desktop/var/tmp/dump/messages-2022110300.gz
+********************************************************************************
+
+        __                    _ _        _                      
+       / /  ___   __ _    /\ \ (_)_ __  (_) __ _              
+      / /  / _ \ / _  |  /  \/ / | '_ \ | |/ _` |            
+     / /__| (_) | (_| | / /\  /| | | | || | (_| |              
+     \____/\___/ \__, | \_\ \/ |_|_| |_|/ |\__,_|        
+                 |___/                |__/                      
+
+
+********************************************************************************
+Sliced logs for 20221102 13:42:00 13:47:00
+********************************************************************************
+Nov  2 13:42:07 Oh no something bad happened!
+Nov  2 13:42:10 MORE BAD STUFF!
+```
