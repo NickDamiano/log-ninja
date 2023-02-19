@@ -244,7 +244,8 @@ class LogNinja:
 	#	To prevent this, the below line looks for the colon in a time stamp and returns early if none is found meaning
 	#	it is not a valid time to evaluate against. There must be a better way and there's a small chance you could have
 	#	a word or message with no time stamp and a colon in the third item on the line but I haven't seen it. 
-	def parse_line(self, start_time, stop_time, line, actual_date):		
+	def parse_line(self, start_time, stop_time, line, actual_date):	
+		line = line.decode()
 		split_line = line.split()
 		# If the log file line has more than 3 elements then we grab the third element which is the time stamp. Sometimes
 		# it has something like "Content-length: 907" which is not a valid line with a time stamp in which case we return
