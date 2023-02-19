@@ -5,7 +5,7 @@ from datetime import time as timelib
 from math import floor
 import re
 import gzip
-import pdb
+# import pdb
 
 class LogNinja:
 
@@ -54,7 +54,7 @@ class LogNinja:
 
 	def get_folder_path(self):
 		# Get the path holding the modem messages
-		folder_path = raw_input("Drag the folder containing the modem messages logs: ")
+		folder_path = input("Drag the folder containing the modem messages logs: ")
 		folder_path = str(folder_path).strip()
 		# Switch to that directory
 		os.chdir(r'%s' % folder_path)
@@ -87,7 +87,7 @@ class LogNinja:
 		return date
 
 	def get_times(self):
-		times = raw_input("Enter all of the GMT times of incidents separated by spaces (1345 1532 1930 1345 : ")
+		times = input("Enter all of the GMT times of incidents separated by spaces such as 1345 1532 1930 1345 : ")
 		times = times.split()
 		times_are_valid = True
 
@@ -119,7 +119,7 @@ class LogNinja:
 				break
 			# Otherwise we ask the user for the times again
 			else:
-				times = raw_input("Enter all of the GMT times of incidents separated by spaces (1345 1532 1930 1345 : ")
+				times = input("Enter all of the GMT times of incidents separated by spaces (1345 1532 1930 1345 : ")
 				times = times.split()	
 		print("You entered: ")
 		print(times)
@@ -132,12 +132,12 @@ class LogNinja:
 		print("")
 		sliced_minutes = input("Enter the number of minutes around each incident you want to slice: ")
 		while True:
-			if sliced_minutes < 721:
+			if int(sliced_minutes) < 721:
 				break
-			elif sliced_minutes > 720:
+			elif int(sliced_minutes) > 720:
 				sliced_minutes = input("Max number of sliced minutes is 720. Enter the number of minutes around each incident you want to slice: ")
 
-		return sliced_minutes / 2.0
+		return int(sliced_minutes) / 2.0
 
 	# Takes in a string like 0345 and returns it like 
 	def convert_time_to_minutes(self, time):
@@ -157,7 +157,7 @@ class LogNinja:
 		minutes_in = int(minutes_in)
 		minutes = minutes_in % 60
 		hours = minutes_in / 60
-		converted_time =  timelib(hours, minutes, seconds)
+		converted_time =  timelib(int(hours), int(minutes), int(seconds))
 		converted_time = converted_time.strftime("%H:%M:%S")
 		return converted_time
 
@@ -175,13 +175,13 @@ class LogNinja:
 		for time in times:
 			converted_time = self.convert_time_to_minutes(time)
 
-			temp_start = converted_time - sliced_minutes
-			temp_stop = converted_time + sliced_minutes
+			temp_start = int(converted_time - sliced_minutes)
+			temp_stop = int(converted_time + sliced_minutes)
 			if(temp_start < 0):
 				temp_start = 0
 			elif(temp_stop > 1439):
 				temp_stop = 1439
-			temp_start_string = self.convert_minutes_to_time(temp_start)
+			temp_start_string = self.convert_minutes_to_time(int(temp_start))
 			temp_stop_string = self.convert_minutes_to_time(temp_stop)
 			start_stop = temp_start_string + " " + temp_stop_string
 			start_stop_combined.append(start_stop)
@@ -320,41 +320,45 @@ class LogNinja:
 # Create the LogNinja instance and run main
 Ninja = LogNinja()
 Ninja.print_ninja()
-
-# Probably start a loop here until the user types exit or something so it keeps getting dates
+keep_going = True 
 # Get folder Path
 folder_path = Ninja.get_folder_path()
-# Get date
-actual_date = Ninja.get_date()
-# Get times to be sliced
-times = Ninja.get_times()
-# Get num of minutes to slice out
-sliced_minutes = Ninja.get_sliced_minutes()
-# Modify the date since the logs for the 25th will actually be listed under the 26th
-log_date = Ninja.modify_date(actual_date)
-# Locate the matching file and return file path
-file_path = Ninja.find_log_by_date(log_date, folder_path)
-# TODO add a thing where if the file_path is not located we loop through and ask for it all again 
-file_type = Ninja.check_extension(file_path)
-# Convert invidivual center times to start stop times in an array to be looped
-modified_times = Ninja.modify_times(times)
-# Create the outfile for the sliced logs where date is the date we are trying to locate
-Ninja.create_file_header(actual_date, file_path)
-# Call file parser method to find and output lines that match the timestamp
-for index, time in enumerate(modified_times):
-	result = Ninja.parse_file(file_path, file_type, actual_date, log_date, modified_times[index])
-	if(result == "File Parsed"):
-		print("Sliced " + modified_times[index] + " from " + file_path)
 
-	#TODO once the file is being extracted accurately, create a second class or method that is just for applying filters and rules
-	# so I can be like if you see, within 2 minutes span, 10 attenuator railed issues, then flag it for cable inspection and pending no issues, antenna replacement
-
-	# or if you see arinc missing o rsomething like that and this and that, diagnose as possible w
+while keep_going:	
+	# Get date
+	actual_date = Ninja.get_date()
+	# Get times to be sliced
+	times = Ninja.get_times()
+	# Get num of minutes to slice out
+	sliced_minutes = Ninja.get_sliced_minutes()
+	# Modify the date since the logs for the 25th will actually be listed under the 26th
+	log_date = Ninja.modify_date(actual_date)
+	# Locate the matching file and return file path
+	file_path = Ninja.find_log_by_date(log_date, folder_path)
+	if(file_path == False):
+		print("No matching log found for " + actual_date)
+		continue
+	# TODO add a thing where if the file_path is not located we loop through and ask for it all again 
+	file_type = Ninja.check_extension(file_path)
+	# Convert invidivual center times to start stop times in an array to be looped
+	modified_times = Ninja.modify_times(times)
+	# Create the outfile for the sliced logs where date is the date we are trying to locate
+	Ninja.create_file_header(actual_date, file_path)
+	# Call file parser method to find and output lines that match the timestamp
+	for index, time in enumerate(modified_times):
+		result = Ninja.parse_file(file_path, file_type, actual_date, log_date, modified_times[index])
+		if(result == "File Parsed"):
+			print("Sliced " + modified_times[index] + " from " + file_path)
+	keep_going = input("Would you like to slice another day? y/n: ")
+	if(keep_going == 'n' or keep_going == 'no' or keep_going == 'N' or keep_going == 'NO'):
+		break
+	else:
+		keep_going = True
 
 
 # Tests
 # test, for 0000 time, 2359 time, 2359 + 5 minutes, 0000 + 5 minutes, test the maximum and minimum acceptable values for each method
 #	test for current date, test for unzipped regular file
 
-
-
+# Future Plans
+# Create a parse alert method or alternate class. Looks through logs and creates a diagnosis based off of known errors - railing attenuator, arinc, etc
